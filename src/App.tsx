@@ -7,6 +7,12 @@ import { TransactionStatusScreen } from "./screens/TransactionStatusScreen";
 
 type Step = "QUOTE" | "CONFIRM_PAY" | "STATUS";
 
+const stepLabel: Record<Step, string> = {
+  QUOTE: "Quote",
+  CONFIRM_PAY: "Confirm & Pay",
+  STATUS: "Status",
+};
+
 function App() {
   const [step, setStep] = useState<Step>("QUOTE");
   const [quote, setQuote] = useState<QuoteResponse | null>(null);
@@ -20,6 +26,10 @@ function App() {
   const handlePaid = (id: string) => {
     setTransactionId(id);
     setStep("STATUS");
+  };
+
+  const handleBackToQuote = () => {
+    setStep("QUOTE");
   };
 
   const handleReset = () => {
@@ -37,13 +47,34 @@ function App() {
         <p className="app-subtitle text-sm">
           Simple cross-border payment flow demo
         </p>
+
+        <div className="mt-4 flex items-center gap-2 text-xs">
+          {(["QUOTE", "CONFIRM_PAY", "STATUS"] as Step[]).map((s, index) => (
+            <div key={s} className="flex items-center gap-2">
+              <span
+                className={
+                  s === step
+                    ? "rounded-full bg-emerald-500 text-slate-950 px-3 py-1 font-semibold"
+                    : "rounded-full bg-slate-800 text-slate-200 px-3 py-1"
+                }
+              >
+                {stepLabel[s]}
+              </span>
+              {index < 2 && <span className="text-slate-500">→</span>}
+            </div>
+          ))}
+        </div>
       </header>
       <main className="app-main">
         {step === "QUOTE" && (
           <QuoteScreen onQuoteConfirmed={handleQuoteConfirmed} />
         )}
         {step === "CONFIRM_PAY" && quote && (
-          <ConfirmPayScreen quote={quote} onPaid={handlePaid} />
+          <ConfirmPayScreen
+            quote={quote}
+            onPaid={handlePaid}
+            onBack={handleBackToQuote}
+          />
         )}
         {step === "STATUS" && transactionId && (
           <TransactionStatusScreen
