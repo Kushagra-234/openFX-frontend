@@ -1,73 +1,113 @@
-# React + TypeScript + Vite
+# OpenFX Frontend (Assignment)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Simplified frontend flow for sending money across international corridors:
 
-Currently, two official plugins are available:
+- Get an FX quote (with expiry)
+- Confirm & pay (prevent double submission, handle errors)
+- Track transaction status until completion (polling)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Tech
 
-## React Compiler
+- React + TypeScript (Vite)
+- Tailwind CSS (via `@tailwindcss/vite`)
+- Mock API layer (in-memory) to simulate:
+  - `POST /quote`
+  - `POST /pay`
+  - `GET /transaction/:id`
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## How to run
 
-## Expanding the ESLint configuration
+Prerequisites:
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- Node.js `20.19+` (recommended) or `22.12+`
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+Install + start:
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Then open:
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+- http://localhost:5173
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+## Screenshots
+
+Add these images to the repo (you can commit them):
+
+- `assets/images/quote.png`
+- `assets/images/confirm-pay.png`
+- `assets/images/transaction-status.png`
+
+And they will render here:
+
+### Quote
+
+![Quote](assets/images/quote.png)
+
+### Confirm & Pay
+
+![Confirm & Pay](assets/images/confirm-pay.png)
+
+### Transaction Status
+
+![Transaction Status](assets/images/transaction-status.png)
+
+## Flow overview
+
+### 1) Quote
+
+- User selects `sourceCurrency`, `destinationCurrency`, and `amount`
+- On **Get Quote**, mock API returns rate/fees/total + `expiresAt`
+- Visible countdown timer is shown
+- **Continue** is disabled after expiry
+- **Refresh quote** fetches a new quote (new expiry)
+
+### 2) Confirm & Pay
+
+- Shows quote summary
+- **Pay now** triggers `postPay({ quoteId })`
+- Prevents double-submit by disabling button while request is in-flight
+- Shows loading and error states
+- If quote is expired on this screen, payment is blocked and user is guided to go back and refresh
+
+### 3) Transaction Status
+
+- Uses polling to call `getTransaction(transactionId)` periodically
+- Displays status clearly: `PROCESSING` → `SENT` → `SETTLED` or `FAILED`
+- Polling stops on final state (`SETTLED`/`FAILED`)
+- Temporary errors are shown with a manual **Retry now** action
+
+## Key design decisions
+
+- **Three-step flow via local state machine (not URL routing)**
+  - Implemented as `step: 'QUOTE' | 'CONFIRM_PAY' | 'STATUS'` in `App.tsx`
+  - Kept scope small and predictable while still making user state explicit
+  - Can be upgraded to React Router if deep-linking is needed
+
+- **Explicit separation of concerns (screens + API + types)**
+  - `src/screens/*` for user-facing steps
+  - `src/api/mockApi.ts` to simulate backend behavior
+  - `src/types/*` to keep request/response contracts explicit
+
+- **Pessimistic UI for payment**
+  - The UI only advances to status after a successful `postPay` response returns a transaction ID
+  - Avoids misleading “paid” states
+
+## Tradeoffs
+
+- **No React Router**: simpler and faster to implement; tradeoff is no deep links or browser back/forward integration.
+- **Mock API is deterministic**: makes demo stable; tradeoff is fewer real-world edge cases (random failures) unless added.
+
+## What I would improve with more time
+
+- Add tests for:
+  - quote expiry countdown
+  - pay double-submit prevention
+  - status polling stop conditions
+- Add more realistic mock behavior:
+  - occasional transient network failures
+  - occasional `FAILED` transactions
+- Extract reusable UI components (`Button`, `Card`, `StatusBadge`) and hooks (`useCountdown`, `usePolling`)
+- Accessibility polish (focus states, aria-live for status updates)
