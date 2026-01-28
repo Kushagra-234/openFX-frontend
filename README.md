@@ -36,23 +36,23 @@ Then open:
 
 Add these images to the repo (you can commit them):
 
-- `assets/images/quote.png`
-- `assets/images/confirm-pay.png`
-- `assets/images/transaction-status.png`
+- `src/assets/images/quote.png`
+- `src/assets/images/confirm-pay.png`
+- `src/assets/images/transaction-status.png`
 
 And they will render here:
 
 ### Quote
 
-![Quote](assets/images/quote.png)
+![Quote](src/assets/images/quote.png)
 
 ### Confirm & Pay
 
-![Confirm & Pay](assets/images/confirm-pay.png)
+![Confirm & Pay](src/assets/images/confirm-pay.png)
 
 ### Transaction Status
 
-![Transaction Status](assets/images/transaction-status.png)
+![Transaction Status](src/assets/images/transaction-status.png)
 
 ## Flow overview
 
