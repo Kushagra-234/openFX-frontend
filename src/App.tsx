@@ -1,35 +1,55 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useState } from "react";
+import "./App.css";
+import type { QuoteResponse } from "./types/quote";
+import { QuoteScreen } from "./screens/QuoteScreen";
+import { ConfirmPayScreen } from "./screens/ConfirmPayScreen";
+import { TransactionStatusScreen } from "./screens/TransactionStatusScreen";
+
+type Step = "QUOTE" | "CONFIRM_PAY" | "STATUS";
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [step, setStep] = useState<Step>("QUOTE");
+  const [quote, setQuote] = useState<QuoteResponse | null>(null);
+  const [transactionId, setTransactionId] = useState<string | null>(null);
+
+  const handleQuoteConfirmed = (confirmedQuote: QuoteResponse) => {
+    setQuote(confirmedQuote);
+    setStep("CONFIRM_PAY");
+  };
+
+  const handlePaid = (id: string) => {
+    setTransactionId(id);
+    setStep("STATUS");
+  };
+
+  const handleReset = () => {
+    setQuote(null);
+    setTransactionId(null);
+    setStep("QUOTE");
+  };
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <div className="app-root">
+      <header className="app-header">
+        <h1>OpenFX</h1>
+        <p className="app-subtitle">Simple cross-border payment flow demo</p>
+      </header>
+      <main className="app-main">
+        {step === "QUOTE" && (
+          <QuoteScreen onQuoteConfirmed={handleQuoteConfirmed} />
+        )}
+        {step === "CONFIRM_PAY" && quote && (
+          <ConfirmPayScreen quote={quote} onPaid={handlePaid} />
+        )}
+        {step === "STATUS" && transactionId && (
+          <TransactionStatusScreen
+            transactionId={transactionId}
+            onReset={handleReset}
+          />
+        )}
+      </main>
+    </div>
+  );
 }
 
-export default App
+export default App;
