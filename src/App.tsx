@@ -30,9 +30,13 @@ function App() {
 
   return (
     <div className="app-root">
-      <header className="app-header">
-        <h1>OpenFX</h1>
-        <p className="app-subtitle">Simple cross-border payment flow demo</p>
+      <header className="app-header flex flex-col items-center gap-1 mb-6">
+        <h1 className="text-3xl font-semibold tracking-tight text-slate-50">
+          OpenFX
+        </h1>
+        <p className="app-subtitle text-sm">
+          Simple cross-border payment flow demo
+        </p>
       </header>
       <main className="app-main">
         {step === "QUOTE" && (

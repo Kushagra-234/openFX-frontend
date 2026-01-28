@@ -34,7 +34,7 @@ export async function postQuote(request: QuoteRequest): Promise<QuoteResponse> {
   };
 }
 
-export async function postPay(request: PayRequest): Promise<PayResponse> {
+export async function postPay(_request: PayRequest): Promise<PayResponse> {
   await new Promise((resolve) => setTimeout(resolve, 800));
 
   const transactionId = randomId();
