@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { QuoteResponse } from "../types/quote";
 import { postPay } from "../api/mockApi";
 import type { PayResponse } from "../types/payment";
@@ -17,7 +17,22 @@ export function ConfirmPayScreen({
   const [isPaying, setIsPaying] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const isQuoteExpired = new Date(quote.expiresAt).getTime() <= Date.now();
+  const [nowMs, setNowMs] = useState(() => Date.now());
+
+  useEffect(() => {
+    const id = window.setInterval(() => setNowMs(Date.now()), 500);
+    return () => window.clearInterval(id);
+  }, []);
+
+  const isQuoteExpired = useMemo(() => {
+    return new Date(quote.expiresAt).getTime() <= nowMs;
+  }, [quote.expiresAt, nowMs]);
+
+  useEffect(() => {
+    if (!isPaying && isQuoteExpired && !error) {
+      setError("This quote has expired. Please go back and refresh the quote.");
+    }
+  }, [error, isPaying, isQuoteExpired]);
 
   const handlePay = async () => {
     if (isPaying) return;
@@ -30,6 +45,14 @@ export function ConfirmPayScreen({
     setError(null);
     try {
       const response: PayResponse = await postPay({ quoteId: quote.id });
+      // If the quote expires during the request, we still keep the UI honest:
+      // user must refresh to proceed.
+      if (new Date(quote.expiresAt).getTime() <= Date.now()) {
+        setError(
+          "This quote has expired. Please go back and refresh the quote.",
+        );
+        return;
+      }
       onPaid(response.transactionId);
     } catch (err) {
       const message =
