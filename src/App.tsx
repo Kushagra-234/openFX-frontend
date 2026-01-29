@@ -83,6 +83,10 @@ function App() {
           />
         )}
       </main>
+
+      <footer className="mt-8 text-center text-xs text-slate-500">
+        Made by Kushagra Gupta
+      </footer>
     </div>
   );
 }
