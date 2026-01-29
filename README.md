@@ -97,8 +97,11 @@ And they will render here:
 
 ## Tradeoffs
 
-- **No React Router**: simpler and faster to implement; tradeoff is no deep links or browser back/forward integration.
-- **Mock API is deterministic**: makes demo stable; tradeoff is fewer real-world edge cases (random failures) unless added.
+- **No React Router**: simpler and faster to implement; tradeoff is no deep linking, browser back/forward integration, or refresh-safe URLs for each step.
+- **Polling instead of push updates**: easiest to implement and backend-agnostic; tradeoff is extra requests and a small delay (up to the polling interval) before the UI reflects the latest status.
+- **Client-side quote expiry countdown**: great UX; tradeoff is dependency on the user’s device clock (clock skew). A production system would also enforce expiry server-side.
+- **Local state instead of a formal state-machine/store**: keeps the code small; tradeoff is that larger flows can become harder to reason about without a reducer/state machine.
+- **Mock API is deterministic**: makes demo stable; tradeoff is fewer real-world edge cases (random failures/declines) unless explicitly simulated.
 
 ## What I would improve with more time
 
